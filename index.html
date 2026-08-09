@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6750A4">
+<title>Smart Calculator</title>
+<style>
+:root{--bg:#f8f7fb;--card:#fff;--text:#202124;--muted:#6f6f78;--primary:#6750a4;--soft:#eee9f8;--danger:#ba1a1a}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:84px}
+header{padding:20px 18px 8px;font-size:25px;font-weight:700}.subtitle{padding:0 18px 12px;color:var(--muted)}
+.screen{margin:10px 14px;padding:20px 18px;background:var(--card);border-radius:22px;box-shadow:0 2px 12px #0000000d;min-height:145px;text-align:right}
+.expression{font-size:25px;min-height:38px;word-break:break-all}.result{font-size:38px;font-weight:700;margin-top:12px;word-break:break-all}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 14px}
+button{border:0;border-radius:18px;padding:18px 8px;font-size:21px;background:var(--card);color:var(--text);box-shadow:0 2px 8px #0000000b;cursor:pointer}
+button:active{transform:scale(.97)}.op{background:var(--soft);color:var(--primary);font-weight:700}.equal{background:var(--primary);color:white}.danger{color:var(--danger)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:center;z-index:10}
+nav button{box-shadow:none;border-radius:0;background:transparent;font-size:13px;padding:10px 8px;flex:1;max-width:130px}
+nav button.active{color:var(--primary);font-weight:700}.page{display:none}.page.active{display:block}
+.card{background:var(--card);margin:12px 14px;padding:16px;border-radius:18px;box-shadow:0 2px 10px #0000000b}
+.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
+h2{margin:8px 14px 4px}h3{margin:0 0 10px}
+.item{padding:13px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}
+.small{font-size:13px;color:var(--muted)}.tool{display:block;width:calc(100% - 28px);margin:10px 14px;text-align:left}
+input,select,textarea{width:100%;padding:13px;border:1px solid #ccc;border-radius:12px;font-size:16px;background:#fff;margin:5px 0 10px}
+textarea{min-height:120px;resize:vertical}.primary{background:var(--primary);color:white}.outline{background:transparent;border:1px solid #bbb;box-shadow:none}
+.hidden{display:none!important}.note-actions{display:flex;gap:7px;margin-top:10px}.note-actions button{font-size:14px;padding:10px}
+.resultbox{background:var(--soft);padding:14px;border-radius:14px;margin-top:10px}
+.back{margin:10px 14px}.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}.tool-grid button{font-size:16px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>Smart Calculator</header>
+<div class="subtitle">Calculator, history, notes & useful tools</div>
+
+<section id="calculator" class="page active">
+<div class="screen"><div id="expr" class="expression"></div><div id="result" class="result">0</div></div>
+<div class="grid">
+<button class="danger" data-v="C">C</button><button data-v="(">(</button><button data-v=")">)</button><button class="op" data-v="÷">÷</button>
+<button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button><button class="op" data-v="×">×</button>
+<button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button><button class="op" data-v="-">−</button>
+<button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button class="op" data-v="+">+</button>
+<button data-v="%">%</button><button data-v="0">0</button><button data-v=".">.</button><button data-v="⌫">⌫</button>
+<button class="equal" style="grid-column:span 4" data-v="=">=</button>
+</div>
+<div class="card"><button class="primary" style="width:100%" onclick="saveCalculationToNote()">＋ Save current result to Note</button></div>
+</section>
+
+<section id="history" class="page">
+<h2>Calculation History</h2><div class="card"><button class="outline" style="width:100%" onclick="clearHistory()">Clear History</button></div>
+<div id="historyList" class="card"></div>
+</section>
+
+<section id="tools" class="page">
+<h2>More Tools</h2>
+<div id="toolHome" class="tool-grid">
+<button onclick="openTool('age')">🎂 Age Calculator</button><button onclick="openTool('emi')">💰 EMI Calculator</button>
+<button onclick="openTool('gst')">🧾 GST Calculator</button><button onclick="openTool('discount')">🏷️ Discount</button>
+<button onclick="openTool('length')">📏 Length</button><button onclick="openTool('area')">⬛ Area</button>
+<button onclick="openTool('data')">💾 Data</button><button onclick="openTool('time')">⏱️ Time</button>
+</div>
+<div id="toolPanel" class="hidden"></div>
+</section>
+
+<section id="notes" class="page">
+<h2>My Notes</h2>
+<div class="card">
+<input id="noteTitle" placeholder="Note title">
+<textarea id="noteContent" placeholder="Write your note..."></textarea>
+<button class="primary" style="width:100%" onclick="addNote()">Save Note</button>
+</div>
+<div id="notesList"></div>
+</section>
+
+<nav>
+<button class="active" onclick="showPage('calculator',this)">🧮<br>Calculator</button>
+<button onclick="showPage('history',this)">🕘<br>History</button>
+<button onclick="showPage('tools',this)">🛠️<br>More Tools</button>
+<button onclick="showPage('notes',this)">📝<br>Note</button>
+</nav>
+</div>
+
+<script>
+let expression="", result="";
+const $=id=>document.getElementById(id);
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+let history=load("calc_history",[]), notes=load("calc_notes",[]);
+
+function showPage(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="history")renderHistory();if(id==="notes")renderNotes()}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>press(b.dataset.v));
+
+function press(v){
+ if(v==="C"){expression="";result="";return render()}
+ if(v==="⌫"){expression=expression.slice(0,-1);return render()}
+ if(v==="="){let r=calculate(expression);if(r!==null){result=fmt(r);history.unshift(expression+" = "+result);history=history.slice(0,100);save("calc_history",history)}return render()}
+ if(v==="%"){expression+="%";return render()}
+ const ops="+-×÷*/";
+ if(ops.includes(v)){
+   if(!expression && v!=="-")return;
+   if(/[+\-×÷*/.]$/.test(expression)){expression=expression.slice(0,-1)+v}else expression+=v;
+ }else expression+=v;
+ result="";render()
+}
+function render(){$("expr").textContent=expression;$("result").textContent=result||"0"}
+function fmt(n){if(!Number.isFinite(n))return "Error";return Number.isInteger(n)?String(n):String(Number(n.toFixed(12)))}
+
+function calculate(s){
+ if(!s)return null;
+ try{
+   s=s.replace(/×/g,"*").replace(/÷/g,"/");
+   // Correct calculator percentage rules:
+   // 200 + 10% => 220, 200 - 10% => 180, 200 * 10% => 20, 10% => 0.1
+   s=s.replace(/(\d+(?:\.\d+)?)\s*([+\-])\s*(\d+(?:\.\d+)?)%/g,
+     (_,a,op,b)=>`(${a}${op}(${a}*${b}/100))`);
+   s=s.replace(/(\d+(?:\.\d+)?)%/g,"($1/100)");
+   if(!/^[0-9+\-*/().\s]+$/.test(s))throw 0;
+   if(/[+\-*/.]$/.test(s))throw 0;
+   return Function('"use strict";return ('+s+')')();
+ }catch(e){result="Error";render();return null}
+}
+function saveCalculationToNote(){
+ if(!result)return;
+ notes.unshift({title:"Calculation Result",content:expression+" = "+result,time:new Date().toLocaleString()});
+ save("calc_notes",notes);alert("Calculation saved to Note");
+}
+function clearHistory(){history=[];save("calc_history",history);renderHistory()}
+function renderHistory(){
+ $("historyList").innerHTML=history.length?history.map((x,i)=>`<div class="item"><div>${esc(x)}</div><button class="outline" style="margin-top:7px;padding:8px 12px;font-size:14px" onclick="copyText(history[${i}])">Copy</button></div>`).join(""):"<div class='small'>No history yet.</div>"
+}
+function addNote(){
+ const t=$("noteTitle").value.trim()||"Untitled Note",c=$("noteContent").value.trim();
+ if(!c){alert("Please write something.");return}
+ notes.unshift({title:t,content:c,time:new Date().toLocaleString()});save("calc_notes",notes);
+ $("noteTitle").value="";$("noteContent").value="";renderNotes();alert("Note saved");
+}
+function renderNotes(){
+ $("notesList").innerHTML=notes.length?notes.map((n,i)=>`<div class="card"><h3>${esc(n.title)}</h3><div>${esc(n.content).replace(/\n/g,"<br>")}</div><div class="small" style="margin-top:8px">${esc(n.time)}</div><div class="note-actions"><button onclick="shareNote(${i})">Share</button><button class="danger" onclick="deleteNote(${i})">Delete</button></div></div>`).join(""):"<div class='card small'>No notes yet.</div>"
+}
+function deleteNote(i){notes.splice(i,1);save("calc_notes",notes);renderNotes()}
+async function shareNote(i){
+ const n=notes[i],text=n.title+"\\n\\n"+n.content;
+ if(navigator.share){try{await navigator.share({title:n.title,text})}catch(e){}}
+ else{await copyText(text);alert("Note copied. You can paste it anywhere.")}
+}
+async function copyText(t){try{await navigator.clipboard.writeText(t);alert("Copied")}catch(e){prompt("Copy:",t)}}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+
+function openTool(type){
+ $("toolHome").classList.add("hidden");$("toolPanel").classList.remove("hidden");
+ const titles={age:"Age Calculator",emi:"EMI / Loan Calculator",gst:"GST Calculator",discount:"Discount Calculator",length:"Length Converter",area:"Area Converter",data:"Data Converter",time:"Time Converter"};
+ let h=`<button class="outline back" onclick="closeTool()">← Back</button><div class="card"><h3>${titles[type]}</h3>`;
+ if(type==="age")h+=`<label>Date of Birth</label><input type="date" id="dob"><button class="primary" style="width:100%" onclick="ageCalc()">Calculate Age</button><div id="toolOut" class="resultbox"></div>`;
+ if(type==="emi")h+=`<input id="p" type="number" placeholder="Loan amount"><input id="r" type="number" placeholder="Annual interest %"><input id="n" type="number" placeholder="Tenure (years)"><button class="primary" style="width:100%" onclick="emiCalc()">Calculate EMI</button><div id="toolOut" class="resultbox"></div>`;
+ if(type==="gst")h+=`<input id="ga" type="number" placeholder="Amount"><input id="gr" type="number" value="18" placeholder="GST %"><select id="gm"><option value="add">Add GST</option><option value="remove">Remove GST</option></select><button class="primary" style="width:100%" onclick="gstCalc()">Calculate</button><div id="toolOut" class="resultbox"></div>`;
+ if(type==="discount")h+=`<input id="dp" type="number" placeholder="Original price"><input id="dd" type="number" placeholder="Discount %"><button class="primary" style="width:100%" onclick="discountCalc()">Calculate</button><div id="toolOut" class="resultbox"></div>`;
+ if(["length","area","data","time"].includes(type))h+=converter(type);
+ h+="</div>";$("toolPanel").innerHTML=h;
+}
+function closeTool(){$("toolPanel").classList.add("hidden");$("toolHome").classList.remove("hidden")}
+function ageCalc(){const d=new Date($("dob").value);if(isNaN(d)){return $("toolOut").textContent="Select date of birth."}const now=new Date();let y=now.getFullYear()-d.getFullYear(),m=now.getMonth()-d.getMonth(),day=now.getDate()-d.getDate();if(day<0){m--;day+=new Date(now.getFullYear(),now.getMonth(),0).getDate()}if(m<0){y--;m+=12}$("toolOut").textContent=`Age: ${y} years, ${m} months, ${day} days`}
+function emiCalc(){const p=+$("p").value,r=+$("r").value/1200,n=+$("n").value*12;if(!p||!n)return;$("toolOut").innerHTML=r?`Monthly EMI: <b>${fmt(p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1))}</b>`:`Monthly EMI: <b>${fmt(p/n)}</b>`}
+function gstCalc(){const a=+$("ga").value,g=+$("gr").value/100;if($("gm").value==="add")$("toolOut").innerHTML=`GST: <b>${fmt(a*g)}</b><br>Total: <b>${fmt(a*(1+g))}</b>`;else $("toolOut").innerHTML=`Base amount: <b>${fmt(a/(1+g))}</b><br>GST included: <b>${fmt(a-a/(1+g))}</b>`}
+function discountCalc(){const p=+$("dp").value,d=+$("dd").value/100;$("toolOut").innerHTML=`Discount: <b>${fmt(p*d)}</b><br>Final price: <b>${fmt(p*(1-d))}</b>`}
+function converter(type){
+ let units,fac;
+ if(type==="length"){units=["Meters","Kilometers","Feet","Inches","Miles"];fac={Meters:1,Kilometers:1000,Feet:.3048,Inches:.0254,Miles:1609.344}}
+ if(type==="area"){units=["Square Meters","Square Feet","Acres","Hectares"];fac={"Square Meters":1,"Square Feet":.092903,"Acres":4046.8564224,"Hectares":10000}}
+ if(type==="data"){units=["Bytes","KB","MB","GB","TB"];fac={Bytes:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776}}
+ if(type==="time"){units=["Seconds","Minutes","Hours","Days"];fac={Seconds:1,Minutes:60,Hours:3600,Days:86400}}
+ return `<input id="cv" type="number" placeholder="Value"><div class="row"><select id="cf">${units.map(x=>`<option>${x}</option>`).join("")}</select><select id="ct">${units.map(x=>`<option>${x}</option>`).join("")}</select></div><button class="primary" style="width:100%" onclick='convertNow(${JSON.stringify(fac)})'>Convert</button><div id="toolOut" class="resultbox"></div>`
+}
+function convertNow(fac){const v=+$("cv").value,a=$("cf").value,b=$("ct").value;$("toolOut").textContent=fmt(v*fac[a]/fac[b])}
+render();renderHistory();renderNotes();
+</script>
+</body>
+</html>
