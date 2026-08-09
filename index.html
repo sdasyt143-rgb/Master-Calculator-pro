@@ -1,179 +1,763 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#6750A4">
-<title>Smart Calculator</title>
-<style>
-:root{--bg:#f8f7fb;--card:#fff;--text:#202124;--muted:#6f6f78;--primary:#6750a4;--soft:#eee9f8;--danger:#ba1a1a}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,system-ui,sans-serif;background:var(--bg);color:var(--text)}
-.app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:84px}
-header{padding:20px 18px 8px;font-size:25px;font-weight:700}.subtitle{padding:0 18px 12px;color:var(--muted)}
-.screen{margin:10px 14px;padding:20px 18px;background:var(--card);border-radius:22px;box-shadow:0 2px 12px #0000000d;min-height:145px;text-align:right}
-.expression{font-size:25px;min-height:38px;word-break:break-all}.result{font-size:38px;font-weight:700;margin-top:12px;word-break:break-all}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 14px}
-button{border:0;border-radius:18px;padding:18px 8px;font-size:21px;background:var(--card);color:var(--text);box-shadow:0 2px 8px #0000000b;cursor:pointer}
-button:active{transform:scale(.97)}.op{background:var(--soft);color:var(--primary);font-weight:700}.equal{background:var(--primary);color:white}.danger{color:var(--danger)}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:center;z-index:10}
-nav button{box-shadow:none;border-radius:0;background:transparent;font-size:13px;padding:10px 8px;flex:1;max-width:130px}
-nav button.active{color:var(--primary);font-weight:700}.page{display:none}.page.active{display:block}
-.card{background:var(--card);margin:12px 14px;padding:16px;border-radius:18px;box-shadow:0 2px 10px #0000000b}
-.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
-h2{margin:8px 14px 4px}h3{margin:0 0 10px}
-.item{padding:13px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}
-.small{font-size:13px;color:var(--muted)}.tool{display:block;width:calc(100% - 28px);margin:10px 14px;text-align:left}
-input,select,textarea{width:100%;padding:13px;border:1px solid #ccc;border-radius:12px;font-size:16px;background:#fff;margin:5px 0 10px}
-textarea{min-height:120px;resize:vertical}.primary{background:var(--primary);color:white}.outline{background:transparent;border:1px solid #bbb;box-shadow:none}
-.hidden{display:none!important}.note-actions{display:flex;gap:7px;margin-top:10px}.note-actions button{font-size:14px;padding:10px}
-.resultbox{background:var(--soft);padding:14px;border-radius:14px;margin-top:10px}
-.back{margin:10px 14px}.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}.tool-grid button{font-size:16px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calculator & Tools Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#121620',
+                        darkCard: '#1A212E',
+                        cyanAccent: '#00BCD4',
+                        cyanHover: '#0097A7',
+                        surfaceVariant: '#222B3C'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-<div class="app">
-<header>Smart Calculator</header>
-<div class="subtitle">Calculator, history, notes & useful tools</div>
+<body class="bg-darkBg text-white font-sans antialiased min-h-screen flex flex-col justify-between">
 
-<section id="calculator" class="page active">
-<div class="screen"><div id="expr" class="expression"></div><div id="result" class="result">0</div></div>
-<div class="grid">
-<button class="danger" data-v="C">C</button><button data-v="(">(</button><button data-v=")">)</button><button class="op" data-v="÷">÷</button>
-<button data-v="7">7</button><button data-v="8">8</button><button data-v="9">9</button><button class="op" data-v="×">×</button>
-<button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button><button class="op" data-v="-">−</button>
-<button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button class="op" data-v="+">+</button>
-<button data-v="%">%</button><button data-v="0">0</button><button data-v=".">.</button><button data-v="⌫">⌫</button>
-<button class="equal" style="grid-column:span 4" data-v="=">=</button>
-</div>
-<div class="card"><button class="primary" style="width:100%" onclick="saveCalculationToNote()">＋ Save current result to Note</button></div>
-</section>
+    <!-- Top Navigation Header -->
+    <header class="bg-darkCard border-b border-gray-800 sticky top-0 z-50 px-4 py-3 shadow-md">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-cyanAccent text-darkBg p-2.5 rounded-xl font-bold text-lg shadow-md flex items-center justify-center w-10 h-10">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white">Calc & Tools Hub</h1>
+                    <p class="text-xs text-gray-400">Professional Calculation Suite</p>
+                </div>
+            </div>
+            <!-- Navigation Tabs -->
+            <nav class="hidden sm:flex space-x-1 bg-surfaceVariant p-1 rounded-xl">
+                <button onclick="switchTab('calculator')" id="nav-btn-calculator" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all bg-cyanAccent text-darkBg shadow">Calculator</button>
+                <button onclick="switchTab('history')" id="nav-btn-history" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-300 hover:text-white">History</button>
+                <button onclick="switchTab('notes')" id="nav-btn-notes" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-300 hover:text-white">Notes</button>
+                <button onclick="switchTab('tools')" id="nav-btn-tools" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-300 hover:text-white">More Tools</button>
+            </nav>
+        </div>
+    </header>
 
-<section id="history" class="page">
-<h2>Calculation History</h2><div class="card"><button class="outline" style="width:100%" onclick="clearHistory()">Clear History</button></div>
-<div id="historyList" class="card"></div>
-</section>
+    <!-- Mobile Bottom Navigation -->
+    <div class="sm:hidden fixed bottom-0 left-0 right-0 bg-darkCard border-t border-gray-800 z-50 flex justify-around py-2 px-3 shadow-lg">
+        <button onclick="switchTab('calculator')" id="mob-btn-calculator" class="flex flex-col items-center text-cyanAccent text-xs">
+            <i class="fa-solid fa-calculator text-lg mb-1"></i> Calc
+        </button>
+        <button onclick="switchTab('history')" id="mob-btn-history" class="flex flex-col items-center text-gray-400 hover:text-white text-xs">
+            <i class="fa-solid fa-clock-rotate-left text-lg mb-1"></i> History
+        </button>
+        <button onclick="switchTab('notes')" id="mob-btn-notes" class="flex flex-col items-center text-gray-400 hover:text-white text-xs">
+            <i class="fa-solid fa-note-sticky text-lg mb-1"></i> Notes
+        </button>
+        <button onclick="switchTab('tools')" id="mob-btn-tools" class="flex flex-col items-center text-gray-400 hover:text-white text-xs">
+            <i class="fa-solid fa-toolbox text-lg mb-1"></i> Tools
+        </button>
+    </div>
 
-<section id="tools" class="page">
-<h2>More Tools</h2>
-<div id="toolHome" class="tool-grid">
-<button onclick="openTool('age')">🎂 Age Calculator</button><button onclick="openTool('emi')">💰 EMI Calculator</button>
-<button onclick="openTool('gst')">🧾 GST Calculator</button><button onclick="openTool('discount')">🏷️ Discount</button>
-<button onclick="openTool('length')">📏 Length</button><button onclick="openTool('area')">⬛ Area</button>
-<button onclick="openTool('data')">💾 Data</button><button onclick="openTool('time')">⏱️ Time</button>
-</div>
-<div id="toolPanel" class="hidden"></div>
-</section>
+    <!-- Main Content Area -->
+    <main class="max-w-4xl mx-auto w-full p-4 sm:p-6 mb-16 sm:mb-4 flex-grow">
 
-<section id="notes" class="page">
-<h2>My Notes</h2>
-<div class="card">
-<input id="noteTitle" placeholder="Note title">
-<textarea id="noteContent" placeholder="Write your note..."></textarea>
-<button class="primary" style="width:100%" onclick="addNote()">Save Note</button>
-</div>
-<div id="notesList"></div>
-</section>
+        <!-- TAB 1: CALCULATOR -->
+        <section id="tab-calculator" class="space-y-4">
+            <div class="bg-darkCard border border-gray-800 rounded-2xl p-5 shadow-xl">
+                <!-- Display Screen -->
+                <div class="bg-surfaceVariant rounded-xl p-4 mb-4 text-right flex flex-col justify-end min-h-[110px] border border-gray-700/50">
+                    <div id="calc-expression" class="text-gray-400 text-sm h-6 overflow-x-auto whitespace-nowrap"></div>
+                    <div id="calc-display" class="text-3xl sm:text-4xl font-bold text-white tracking-wider overflow-x-auto whitespace-nowrap">0</div>
+                </div>
 
-<nav>
-<button class="active" onclick="showPage('calculator',this)">🧮<br>Calculator</button>
-<button onclick="showPage('history',this)">🕘<br>History</button>
-<button onclick="showPage('tools',this)">🛠️<br>More Tools</button>
-<button onclick="showPage('notes',this)">📝<br>Note</button>
-</nav>
-</div>
+                <!-- Action Buttons bar -->
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <button onclick="saveCalculationToNote()" class="text-xs bg-surfaceVariant hover:bg-gray-700 text-cyanAccent border border-cyanAccent/30 px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5">
+                        <i class="fa-solid fa-plus-circle"></i> <span>Save to Notes</span>
+                    </button>
+                    <span id="deg-rad-indicator" class="text-xs text-gray-400 font-medium">DEG</span>
+                </div>
 
-<script>
-let expression="", result="";
-const $=id=>document.getElementById(id);
-const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
-let history=load("calc_history",[]), notes=load("calc_notes",[]);
+                <!-- Keypad Grid -->
+                <div class="grid grid-cols-4 gap-2.5">
+                    <!-- Row 1 -->
+                    <button onclick="clearCalc()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 py-3 rounded-xl font-semibold transition-all">AC</button>
+                    <button onclick="appendValue('(')" class="bg-surfaceVariant hover:bg-gray-700 text-gray-300 py-3 rounded-xl font-semibold transition-all">(</button>
+                    <button onclick="appendValue(')')" class="bg-surfaceVariant hover:bg-gray-700 text-gray-300 py-3 rounded-xl font-semibold transition-all">)</button>
+                    <button onclick="appendValue('/')" class="bg-cyanAccent/10 hover:bg-cyanAccent/20 text-cyanAccent border border-cyanAccent/30 py-3 rounded-xl font-semibold transition-all">&divide;</button>
 
-function showPage(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="history")renderHistory();if(id==="notes")renderNotes()}
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>press(b.dataset.v));
+                    <!-- Row 2 -->
+                    <button onclick="appendValue('7')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">7</button>
+                    <button onclick="appendValue('8')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">8</button>
+                    <button onclick="appendValue('9')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">9</button>
+                    <button onclick="appendValue('*')" class="bg-cyanAccent/10 hover:bg-cyanAccent/20 text-cyanAccent border border-cyanAccent/30 py-3.5 rounded-xl font-semibold transition-all">&times;</button>
 
-function press(v){
- if(v==="C"){expression="";result="";return render()}
- if(v==="⌫"){expression=expression.slice(0,-1);return render()}
- if(v==="="){let r=calculate(expression);if(r!==null){result=fmt(r);history.unshift(expression+" = "+result);history=history.slice(0,100);save("calc_history",history)}return render()}
- if(v==="%"){expression+="%";return render()}
- const ops="+-×÷*/";
- if(ops.includes(v)){
-   if(!expression && v!=="-")return;
-   if(/[+\-×÷*/.]$/.test(expression)){expression=expression.slice(0,-1)+v}else expression+=v;
- }else expression+=v;
- result="";render()
-}
-function render(){$("expr").textContent=expression;$("result").textContent=result||"0"}
-function fmt(n){if(!Number.isFinite(n))return "Error";return Number.isInteger(n)?String(n):String(Number(n.toFixed(12)))}
+                    <!-- Row 3 -->
+                    <button onclick="appendValue('4')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">4</button>
+                    <button onclick="appendValue('5')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">5</button>
+                    <button onclick="appendValue('6')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">6</button>
+                    <button onclick="appendValue('-')" class="bg-cyanAccent/10 hover:bg-cyanAccent/20 text-cyanAccent border border-cyanAccent/30 py-3.5 rounded-xl font-semibold transition-all">&minus;</button>
 
-function calculate(s){
- if(!s)return null;
- try{
-   s=s.replace(/×/g,"*").replace(/÷/g,"/");
-   // Correct calculator percentage rules:
-   // 200 + 10% => 220, 200 - 10% => 180, 200 * 10% => 20, 10% => 0.1
-   s=s.replace(/(\d+(?:\.\d+)?)\s*([+\-])\s*(\d+(?:\.\d+)?)%/g,
-     (_,a,op,b)=>`(${a}${op}(${a}*${b}/100))`);
-   s=s.replace(/(\d+(?:\.\d+)?)%/g,"($1/100)");
-   if(!/^[0-9+\-*/().\s]+$/.test(s))throw 0;
-   if(/[+\-*/.]$/.test(s))throw 0;
-   return Function('"use strict";return ('+s+')')();
- }catch(e){result="Error";render();return null}
-}
-function saveCalculationToNote(){
- if(!result)return;
- notes.unshift({title:"Calculation Result",content:expression+" = "+result,time:new Date().toLocaleString()});
- save("calc_notes",notes);alert("Calculation saved to Note");
-}
-function clearHistory(){history=[];save("calc_history",history);renderHistory()}
-function renderHistory(){
- $("historyList").innerHTML=history.length?history.map((x,i)=>`<div class="item"><div>${esc(x)}</div><button class="outline" style="margin-top:7px;padding:8px 12px;font-size:14px" onclick="copyText(history[${i}])">Copy</button></div>`).join(""):"<div class='small'>No history yet.</div>"
-}
-function addNote(){
- const t=$("noteTitle").value.trim()||"Untitled Note",c=$("noteContent").value.trim();
- if(!c){alert("Please write something.");return}
- notes.unshift({title:t,content:c,time:new Date().toLocaleString()});save("calc_notes",notes);
- $("noteTitle").value="";$("noteContent").value="";renderNotes();alert("Note saved");
-}
-function renderNotes(){
- $("notesList").innerHTML=notes.length?notes.map((n,i)=>`<div class="card"><h3>${esc(n.title)}</h3><div>${esc(n.content).replace(/\n/g,"<br>")}</div><div class="small" style="margin-top:8px">${esc(n.time)}</div><div class="note-actions"><button onclick="shareNote(${i})">Share</button><button class="danger" onclick="deleteNote(${i})">Delete</button></div></div>`).join(""):"<div class='card small'>No notes yet.</div>"
-}
-function deleteNote(i){notes.splice(i,1);save("calc_notes",notes);renderNotes()}
-async function shareNote(i){
- const n=notes[i],text=n.title+"\\n\\n"+n.content;
- if(navigator.share){try{await navigator.share({title:n.title,text})}catch(e){}}
- else{await copyText(text);alert("Note copied. You can paste it anywhere.")}
-}
-async function copyText(t){try{await navigator.clipboard.writeText(t);alert("Copied")}catch(e){prompt("Copy:",t)}}
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+                    <!-- Row 4 -->
+                    <button onclick="appendValue('1')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">1</button>
+                    <button onclick="appendValue('2')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">2</button>
+                    <button onclick="appendValue('3')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">3</button>
+                    <button onclick="appendValue('+')" class="bg-cyanAccent/10 hover:bg-cyanAccent/20 text-cyanAccent border border-cyanAccent/30 py-3.5 rounded-xl font-semibold transition-all">+</button>
 
-function openTool(type){
- $("toolHome").classList.add("hidden");$("toolPanel").classList.remove("hidden");
- const titles={age:"Age Calculator",emi:"EMI / Loan Calculator",gst:"GST Calculator",discount:"Discount Calculator",length:"Length Converter",area:"Area Converter",data:"Data Converter",time:"Time Converter"};
- let h=`<button class="outline back" onclick="closeTool()">← Back</button><div class="card"><h3>${titles[type]}</h3>`;
- if(type==="age")h+=`<label>Date of Birth</label><input type="date" id="dob"><button class="primary" style="width:100%" onclick="ageCalc()">Calculate Age</button><div id="toolOut" class="resultbox"></div>`;
- if(type==="emi")h+=`<input id="p" type="number" placeholder="Loan amount"><input id="r" type="number" placeholder="Annual interest %"><input id="n" type="number" placeholder="Tenure (years)"><button class="primary" style="width:100%" onclick="emiCalc()">Calculate EMI</button><div id="toolOut" class="resultbox"></div>`;
- if(type==="gst")h+=`<input id="ga" type="number" placeholder="Amount"><input id="gr" type="number" value="18" placeholder="GST %"><select id="gm"><option value="add">Add GST</option><option value="remove">Remove GST</option></select><button class="primary" style="width:100%" onclick="gstCalc()">Calculate</button><div id="toolOut" class="resultbox"></div>`;
- if(type==="discount")h+=`<input id="dp" type="number" placeholder="Original price"><input id="dd" type="number" placeholder="Discount %"><button class="primary" style="width:100%" onclick="discountCalc()">Calculate</button><div id="toolOut" class="resultbox"></div>`;
- if(["length","area","data","time"].includes(type))h+=converter(type);
- h+="</div>";$("toolPanel").innerHTML=h;
-}
-function closeTool(){$("toolPanel").classList.add("hidden");$("toolHome").classList.remove("hidden")}
-function ageCalc(){const d=new Date($("dob").value);if(isNaN(d)){return $("toolOut").textContent="Select date of birth."}const now=new Date();let y=now.getFullYear()-d.getFullYear(),m=now.getMonth()-d.getMonth(),day=now.getDate()-d.getDate();if(day<0){m--;day+=new Date(now.getFullYear(),now.getMonth(),0).getDate()}if(m<0){y--;m+=12}$("toolOut").textContent=`Age: ${y} years, ${m} months, ${day} days`}
-function emiCalc(){const p=+$("p").value,r=+$("r").value/1200,n=+$("n").value*12;if(!p||!n)return;$("toolOut").innerHTML=r?`Monthly EMI: <b>${fmt(p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1))}</b>`:`Monthly EMI: <b>${fmt(p/n)}</b>`}
-function gstCalc(){const a=+$("ga").value,g=+$("gr").value/100;if($("gm").value==="add")$("toolOut").innerHTML=`GST: <b>${fmt(a*g)}</b><br>Total: <b>${fmt(a*(1+g))}</b>`;else $("toolOut").innerHTML=`Base amount: <b>${fmt(a/(1+g))}</b><br>GST included: <b>${fmt(a-a/(1+g))}</b>`}
-function discountCalc(){const p=+$("dp").value,d=+$("dd").value/100;$("toolOut").innerHTML=`Discount: <b>${fmt(p*d)}</b><br>Final price: <b>${fmt(p*(1-d))}</b>`}
-function converter(type){
- let units,fac;
- if(type==="length"){units=["Meters","Kilometers","Feet","Inches","Miles"];fac={Meters:1,Kilometers:1000,Feet:.3048,Inches:.0254,Miles:1609.344}}
- if(type==="area"){units=["Square Meters","Square Feet","Acres","Hectares"];fac={"Square Meters":1,"Square Feet":.092903,"Acres":4046.8564224,"Hectares":10000}}
- if(type==="data"){units=["Bytes","KB","MB","GB","TB"];fac={Bytes:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776}}
- if(type==="time"){units=["Seconds","Minutes","Hours","Days"];fac={Seconds:1,Minutes:60,Hours:3600,Days:86400}}
- return `<input id="cv" type="number" placeholder="Value"><div class="row"><select id="cf">${units.map(x=>`<option>${x}</option>`).join("")}</select><select id="ct">${units.map(x=>`<option>${x}</option>`).join("")}</select></div><button class="primary" style="width:100%" onclick='convertNow(${JSON.stringify(fac)})'>Convert</button><div id="toolOut" class="resultbox"></div>`
-}
-function convertNow(fac){const v=+$("cv").value,a=$("cf").value,b=$("ct").value;$("toolOut").textContent=fmt(v*fac[a]/fac[b])}
-render();renderHistory();renderNotes();
-</script>
+                    <!-- Row 5 -->
+                    <button onclick="backspace()" class="bg-surfaceVariant hover:bg-gray-700 text-yellow-400 py-3.5 rounded-xl font-semibold transition-all"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="appendValue('0')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">0</button>
+                    <button onclick="appendValue('.')" class="bg-surfaceVariant hover:bg-gray-700 text-white py-3.5 rounded-xl font-semibold transition-all">.</button>
+                    <button onclick="calculateResult()" class="bg-cyanAccent hover:bg-cyanHover text-darkBg py-3.5 rounded-xl font-bold shadow-lg transition-all">=</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: HISTORY -->
+        <section id="tab-history" class="hidden space-y-4">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-white">Calculation History</h2>
+                <button onclick="clearHistory()" class="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg transition-all">Clear All</button>
+            </div>
+            <div id="history-list" class="space-y-3">
+                <!-- Dynamically populated history items -->
+            </div>
+        </section>
+
+        <!-- TAB 3: NOTES -->
+        <section id="tab-notes" class="hidden space-y-4">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-white">Notes & Calculations</h2>
+                <button onclick="openNoteModal()" class="bg-cyanAccent hover:bg-cyanHover text-darkBg text-sm font-bold px-4 py-2 rounded-xl shadow transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-plus"></i> <span>New Note</span>
+                </button>
+            </div>
+            <div id="notes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Dynamically populated notes -->
+            </div>
+        </section>
+
+        <!-- TAB 4: MORE TOOLS -->
+        <section id="tab-tools" class="hidden space-y-4">
+            <div>
+                <h2 class="text-2xl font-bold text-white">More Tools Hub</h2>
+                <p class="text-sm text-gray-400">Advanced financial calculators & unit conversion utilities</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Financial Section -->
+                <div>
+                    <h3 class="text-sm font-bold text-cyanAccent uppercase tracking-wider mb-3">Financial & Utility Calculators</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div onclick="openToolModal('age')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-cyanAccent/20 text-cyanAccent p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-cake-candles"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">Age Calculator</h4>
+                                <p class="text-xs text-gray-400">Calculate exact age (Years, Months, Days)</p>
+                            </div>
+                        </div>
+                        <div onclick="openToolModal('emi')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-purple-500/20 text-purple-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-landmark"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">EMI / Loan Calculator</h4>
+                                <p class="text-xs text-gray-400">Calculate monthly loan installments and interest</p>
+                            </div>
+                        </div>
+                        <div onclick="openToolModal('gst')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-green-500/20 text-green-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">GST Calculator</h4>
+                                <p class="text-xs text-gray-400">Add or remove GST/Tax instantly</p>
+                            </div>
+                        </div>
+                        <div onclick="openToolModal('discount')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-orange-500/20 text-orange-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-tags"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">Discount Calculator</h4>
+                                <p class="text-xs text-gray-400">Calculate savings and final price after discounts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Converters Section -->
+                <div>
+                    <h3 class="text-sm font-bold text-cyanAccent uppercase tracking-wider mb-3">Unit Converters</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div onclick="openToolModal('length')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-blue-500/20 text-blue-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-ruler"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">Length Converter</h4>
+                                <p class="text-xs text-gray-400">Meters, Kilometers, Feet, Inches, Miles</p>
+                            </div>
+                        </div>
+                        <div onclick="openToolModal('area')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-yellow-500/20 text-yellow-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-chart-area"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">Area Converter</h4>
+                                <p class="text-xs text-gray-400">Square Meters, Square Feet, Acres, Hectares</p>
+                            </div>
+                        </div>
+                        <div onclick="openToolModal('data')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-indigo-500/20 text-indigo-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-database"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">Data Converter</h4>
+                                <p class="text-xs text-gray-400">Bytes, KB, MB, GB, TB</p>
+                            </div>
+                        </div>
+                        <div onclick="openToolModal('time')" class="bg-darkCard border border-gray-800 hover:border-cyanAccent/50 p-4 rounded-2xl cursor-pointer transition-all flex items-center space-x-4 shadow">
+                            <div class="bg-pink-500/20 text-pink-400 p-3 rounded-xl text-lg w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white">Time Converter</h4>
+                                <p class="text-xs text-gray-400">Seconds, Minutes, Hours, Days, Years</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL FOR NOTES -->
+    <div id="note-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-darkCard border border-gray-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <h3 id="note-modal-title" class="text-lg font-bold text-white">New Note</h3>
+            <input type="hidden" id="note-id">
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">Title</label>
+                <input type="text" id="note-title-input" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyanAccent" placeholder="Note title...">
+            </div>
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">Content</label>
+                <textarea id="note-content-input" rows="4" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyanAccent" placeholder="Write your note or calculation result..."></textarea>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+                <button onclick="closeNoteModal()" class="px-4 py-2 rounded-xl bg-surfaceVariant text-gray-300 hover:text-white text-sm">Cancel</button>
+                <button onclick="saveNote()" class="px-5 py-2 rounded-xl bg-cyanAccent text-darkBg font-bold text-sm shadow">Save Note</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FOR TOOLS & CALCULATORS -->
+    <div id="tool-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-darkCard border border-gray-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 id="tool-modal-title" class="text-lg font-bold text-white">Tool</h3>
+                <button onclick="closeToolModal()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="tool-modal-body" class="space-y-4">
+                <!-- Dynamically populated tool form -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-gray-500 border-t border-gray-800/60 mt-auto">
+        Professional Calculation & Tools Suite &bull; Single-File Web Edition
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State
+        let currentExpression = '';
+        let displayValue = '0';
+        let history = JSON.parse(localStorage.getItem('calc_history') || '[]');
+        let notes = JSON.parse(localStorage.getItem('calc_notes') || '[]');
+
+        // Tabs
+        function switchTab(tabId) {
+            ['calculator', 'history', 'notes', 'tools'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-btn-${t}`)?.classList.remove('bg-cyanAccent', 'text-darkBg', 'shadow');
+                document.getElementById(`nav-btn-${t}`)?.classList.add('text-gray-300');
+                document.getElementById(`mob-btn-${t}`)?.classList.remove('text-cyanAccent');
+                document.getElementById(`mob-btn-${t}`)?.classList.add('text-gray-400');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-btn-${tabId}`)?.classList.add('bg-cyanAccent', 'text-darkBg', 'shadow');
+            document.getElementById(`nav-btn-${tabId}`)?.classList.remove('text-gray-300');
+            document.getElementById(`mob-btn-${tabId}`)?.classList.add('text-cyanAccent');
+            document.getElementById(`mob-btn-${tabId}`)?.classList.remove('text-gray-400');
+
+            if (tabId === 'history') renderHistory();
+            if (tabId === 'notes') renderNotes();
+        }
+
+        // Calculator Logic
+        function appendValue(val) {
+            if (displayValue === '0' && !isNaN(val)) {
+                displayValue = val;
+            } else {
+                displayValue += val;
+            }
+            updateDisplay();
+        }
+
+        function clearCalc() {
+            displayValue = '0';
+            currentExpression = '';
+            updateDisplay();
+        }
+
+        function backspace() {
+            if (displayValue.length > 1) {
+                displayValue = displayValue.slice(0, -1);
+            } else {
+                displayValue = '0';
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('calc-display').innerText = displayValue;
+            document.getElementById('calc-expression').innerText = currentExpression;
+        }
+
+        function calculateResult() {
+            try {
+                // Sanitize expression for safe eval
+                let sanitized = displayValue.replace(/×/g, '*').replace(/÷/g, '/');
+                let result = Function('"use strict";return (' + sanitized + ')')();
+                
+                // Save to history
+                history.unshift({
+                    expression: displayValue,
+                    result: result,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                if (history.length > 50) history.pop();
+                localStorage.setItem('calc_history', JSON.stringify(history));
+
+                currentExpression = displayValue + ' =';
+                displayValue = String(result);
+                updateDisplay();
+            } catch (e) {
+                displayValue = 'Error';
+                updateDisplay();
+                setTimeout(() => clearCalc(), 1500);
+            }
+        }
+
+        function saveCalculationToNote() {
+            const title = "Calculation: " + (currentExpression || displayValue);
+            const content = `Expression: ${currentExpression || displayValue}\nResult: ${displayValue}\nTime: ${new Date().toLocaleString()}`;
+            notes.unshift({ id: Date.now(), title, content, time: new Date().toLocaleString() });
+            localStorage.setItem('calc_notes', JSON.stringify(notes));
+            alert('Saved current calculation to Notes!');
+        }
+
+        // History Management
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (history.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-500">No calculation history yet</div>`;
+                return;
+            }
+            container.innerHTML = history.map((item, idx) => `
+                <div class="bg-darkCard border border-gray-800 p-4 rounded-2xl flex justify-between items-center shadow">
+                    <div>
+                        <div class="text-sm text-gray-400">${item.expression}</div>
+                        <div class="text-lg font-bold text-white">= ${item.result}</div>
+                        <div class="text-[10px] text-gray-500 mt-1">${item.time}</div>
+                    </div>
+                    <button onclick="useHistoryResult('${item.result}')" class="bg-cyanAccent/20 hover:bg-cyanAccent/30 text-cyanAccent text-xs px-3 py-1.5 rounded-xl transition-all">Use</button>
+                </div>
+            `).join('');
+        }
+
+        function useHistoryResult(res) {
+            displayValue = String(res);
+            switchTab('calculator');
+        }
+
+        function clearHistory() {
+            history = [];
+            localStorage.setItem('calc_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // Notes Management
+        function renderNotes() {
+            const container = document.getElementById('notes-list');
+            if (notes.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">No notes saved yet</div>`;
+                return;
+            }
+            container.innerHTML = notes.map(note => `
+                <div class="bg-darkCard border border-gray-800 p-5 rounded-2xl shadow flex flex-col justify-between space-y-3">
+                    <div>
+                        <h3 class="font-bold text-white text-base">${escapeHtml(note.title)}</h3>
+                        <p class="text-xs text-gray-400 mt-1 whitespace-pre-wrap">${escapeHtml(note.content)}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-800/80 text-xs text-gray-500">
+                        <span>${note.time}</span>
+                        <div class="space-x-2">
+                            <button onclick="shareNote('${encodeURIComponent(note.title)}', '${encodeURIComponent(note.content)}')" class="text-cyanAccent hover:underline"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                            <button onclick="deleteNote(${note.id})" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openNoteModal(id = null) {
+            document.getElementById('note-modal').classList.remove('hidden');
+            if (id) {
+                const note = notes.find(n => n.id === id);
+                document.getElementById('note-modal-title').innerText = 'Edit Note';
+                document.getElementById('note-id').value = note.id;
+                document.getElementById('note-title-input').value = note.title;
+                document.getElementById('note-content-input').value = note.content;
+            } else {
+                document.getElementById('note-modal-title').innerText = 'New Note';
+                document.getElementById('note-id').value = '';
+                document.getElementById('note-title-input').value = '';
+                document.getElementById('note-content-input').value = '';
+            }
+        }
+
+        function closeNoteModal() {
+            document.getElementById('note-modal').classList.add('hidden');
+        }
+
+        function saveNote() {
+            const id = document.getElementById('note-id').value;
+            const title = document.getElementById('note-title-input').value.trim() || 'Untitled Note';
+            const content = document.getElementById('note-content-input').value.trim();
+
+            if (id) {
+                notes = notes.map(n => n.id == id ? { ...n, title, content } : n);
+            } else {
+                notes.unshift({ id: Date.now(), title, content, time: new Date().toLocaleString() });
+            }
+            localStorage.setItem('calc_notes', JSON.stringify(notes));
+            closeNoteModal();
+            renderNotes();
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('calc_notes', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function shareNote(title, content) {
+            const decodedTitle = decodeURIComponent(title);
+            const decodedContent = decodeURIComponent(content);
+            if (navigator.share) {
+                navigator.share({ title: decodedTitle, text: `${decodedTitle}\n\n${decodedContent}` }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(`${decodedTitle}\n\n${decodedContent}`);
+                alert('Note copied to clipboard!');
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Tools Modal & Calculators
+        function openToolModal(toolType) {
+            document.getElementById('tool-modal').classList.remove('hidden');
+            const titleEl = document.getElementById('tool-modal-title');
+            const bodyEl = document.getElementById('tool-modal-body');
+
+            if (toolType === 'age') {
+                titleEl.innerText = 'Age Calculator';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Birth Date</label>
+                        <input type="date" id="tool-birth-date" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white">
+                    </div>
+                    <button onclick="calcAge()" class="w-full bg-cyanAccent text-darkBg font-bold py-3 rounded-xl shadow">Calculate Age</button>
+                    <div id="tool-age-result" class="text-center font-bold text-lg text-white pt-2"></div>
+                `;
+            } else if (toolType === 'emi') {
+                titleEl.innerText = 'EMI / Loan Calculator';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Loan Amount ($)</label>
+                        <input type="number" id="tool-loan-amt" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="100000">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Interest Rate (% p.a.)</label>
+                        <input type="number" step="0.1" id="tool-loan-rate" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="8.5">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Tenure (Months)</label>
+                        <input type="number" id="tool-loan-tenure" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="12">
+                    </div>
+                    <button onclick="calcEMI()" class="w-full bg-cyanAccent text-darkBg font-bold py-3 rounded-xl shadow">Calculate EMI</button>
+                    <div id="tool-emi-result" class="text-center font-bold text-lg text-white pt-2"></div>
+                `;
+            } else if (toolType === 'gst') {
+                titleEl.innerText = 'GST Calculator';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Initial Amount ($)</label>
+                        <input type="number" id="tool-gst-amt" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="1000">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">GST Rate (%)</label>
+                        <input type="number" id="tool-gst-rate" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="18">
+                    </div>
+                    <button onclick="calcGST()" class="w-full bg-cyanAccent text-darkBg font-bold py-3 rounded-xl shadow">Calculate GST</button>
+                    <div id="tool-gst-result" class="space-y-1 pt-2 text-white font-medium text-center"></div>
+                `;
+            } else if (toolType === 'discount') {
+                titleEl.innerText = 'Discount Calculator';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Original Price ($)</label>
+                        <input type="number" id="tool-disc-price" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="250">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Discount (%)</label>
+                        <input type="number" id="tool-disc-rate" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white" placeholder="20">
+                    </div>
+                    <button onclick="calcDiscount()" class="w-full bg-cyanAccent text-darkBg font-bold py-3 rounded-xl shadow">Calculate Discount</button>
+                    <div id="tool-disc-result" class="space-y-1 pt-2 text-white font-medium text-center"></div>
+                `;
+            } else if (toolType === 'length') {
+                titleEl.innerText = 'Length Converter';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Value</label>
+                        <input type="number" id="tool-len-val" value="1" oninput="convertLength()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">From</label>
+                            <select id="tool-len-from" onchange="convertLength()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="m">Meters</option>
+                                <option value="km">Kilometers</option>
+                                <option value="cm">Centimeters</option>
+                                <option value="ft">Feet</option>
+                                <option value="in">Inches</option>
+                                <option value="mi">Miles</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">To</label>
+                            <select id="tool-len-to" onchange="convertLength()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="m">Meters</option>
+                                <option value="km">Kilometers</option>
+                                <option value="cm">Centimeters</option>
+                                <option value="ft" selected>Feet</option>
+                                <option value="in">Inches</option>
+                                <option value="mi">Miles</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tool-len-result" class="text-center font-bold text-xl text-cyanAccent pt-3"></div>
+                `;
+                setTimeout(() => convertLength(), 100);
+            } else if (toolType === 'area') {
+                titleEl.innerText = 'Area Converter';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Value</label>
+                        <input type="number" id="tool-area-val" value="1" oninput="convertArea()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">From</label>
+                            <select id="tool-area-from" onchange="convertArea()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="sqm">Square Meters</option>
+                                <option value="sqft">Square Feet</option>
+                                <option value="acre">Acres</option>
+                                <option value="hectare">Hectares</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">To</label>
+                            <select id="tool-area-to" onchange="convertArea()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="sqm">Square Meters</option>
+                                <option value="sqft" selected>Square Feet</option>
+                                <option value="acre">Acres</option>
+                                <option value="hectare">Hectares</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tool-area-result" class="text-center font-bold text-xl text-cyanAccent pt-3"></div>
+                `;
+                setTimeout(() => convertArea(), 100);
+            } else if (toolType === 'data') {
+                titleEl.innerText = 'Data Converter';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Value</label>
+                        <input type="number" id="tool-data-val" value="1024" oninput="convertData()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">From</label>
+                            <select id="tool-data-from" onchange="convertData()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="b">Bytes</option>
+                                <option value="kb" selected>KB</option>
+                                <option value="mb">MB</option>
+                                <option value="gb">GB</option>
+                                <option value="tb">TB</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">To</label>
+                            <select id="tool-data-to" onchange="convertData()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="b">Bytes</option>
+                                <option value="kb">KB</option>
+                                <option value="mb" selected>MB</option>
+                                <option value="gb">GB</option>
+                                <option value="tb">TB</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tool-data-result" class="text-center font-bold text-xl text-cyanAccent pt-3"></div>
+                `;
+                setTimeout(() => convertData(), 100);
+            } else if (toolType === 'time') {
+                titleEl.innerText = 'Time Converter';
+                bodyEl.innerHTML = `
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Value</label>
+                        <input type="number" id="tool-time-val" value="60" oninput="convertTime()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-4 py-2.5 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">From</label>
+                            <select id="tool-time-from" onchange="convertTime()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="sec">Seconds</option>
+                                <option value="min" selected>Minutes</option>
+                                <option value="hr">Hours</option>
+                                <option value="day">Days</option>
+                                <option value="yr">Years</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">To</label>
+                            <select id="tool-time-to" onchange="convertTime()" class="w-full bg-surfaceVariant border border-gray-700 rounded-xl px-3 py-2.5 text-white">
+                                <option value="sec">Seconds</option>
+                                <option value="min">Minutes</option>
+                                <option value="hr" selected>Hours</option>
+                                <option value="day">Days</option>
+                                <option value="yr">Years</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tool-time-result" class="text-center font-bold text-xl text-cyanAccent pt-3"></div>
+                `;
+                setTimeout(() => convertTime(), 100);
+            }
+        }
+
+        function closeToolModal() {
+            document.getElementById('tool-modal').classList.add('hidden');
+        }
+
+        // Tool Calculator Logic
+        function calcAge() {
+            const val = document.getElementById('tool-birth-date').value;
+            if (!val) return;
+            const birth = new Date(val);
+            const now = new Date();
+            let years = now.getFullYear() - birth.getFullYear();
+            let months = now.getMonth() - birth.getMonth();
+            let days = now.getDate() - birth.getDate();
+            if (days < 0) {
+                months--;
+                days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            document.getElementById('tool-age-result').innerText = `${years} Years, ${months} Months, ${days} Days`;
+        }
+
+        function calcEMI() {
+            const p = parseFloat(document.getElementById('tool-loan-amt').value) || 0;
+            const r = (parseFloat(document.getElementById('tool-loan-rate').value) || 0) / 12 / 100;
+            const n = parseFloat(document.getElementById('tool-loan-tenure').value) || 0;
+            if (p <= 0 || r <= 0 || n <= 0) {
+                document.getElementById('tool-emi-result').innerText = 'Please enter valid numbers';
+                return;
+            }
+            const emi = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const totalPayment = emi * n;
+            const totalInterest = totalPayment - p;
+            document.getElementById('tool-emi-result').innerHTML = `Monthly EMI: $${emi.toFixed(2)}<br><span class="text-xs text-gray-400">Total Interest: $${totalInterest.toFixed(2)} | Total Payment: $${totalPayment.toFixed(2)}</span>`;
+        }
+
+        function calcGST() {
+            const amt = parseFloat(document.getElementById('tool-gst-amt').value) || 0;
+            const rate = parseFloat(document.getElementById('tool-gst-rate').value) || 0;
+            const gstAmount = (amt * rate) / 100;
+            const totalAmount = amt + gstAmount;
+            document.getElementById('tool-gst-result').innerHTML = `
+                <div>GST Amount: <b>$${gstAmount.toFixed(2)}</b></div>
+                <div>Total Amount: <b>$${totalAmount.toFixed(2)}</b></div>
+            `;
+        }
+
+        function calcDiscount() {
+            const price = parseFloat(document.getElementById('tool-disc-price').value) || 0;
+            const rate = parseFloat(document.getElementById('tool-disc-rate').value) || 0;
+            const saved = (price * rate) / 100;
+            const finalPrice = price - saved;
+            document.getElementById('tool-disc-result').innerHTML = `
+                <div>You Save: <b>$${saved.toFixed(2)}</b></div>
+                <div>Final Price: <b>$${finalPrice.toFixed(2)}</b></div>
+            `;
+        }
+
+        // Converters
+        function convertLength() {
+            const val = parseFloat(document.getElementById('tool-len-val').value) || 0;
+            const from = document.getElementById('tool-len-from').value;
+            const to = document.getElementById('tool-len-to').value;
+            const toMeters = { m: 1, km: 1000, cm: 0.01, ft: 0.3048, in: 0.0254, mi: 1609.34 };
+            const meters = val * toMeters[from];
+            const result = meters / toMeters[to];
+            document.getElementById('tool-len-result').innerText = `${result.toLocaleString(undefined, {maximumFractionDigits: 4})} ${to.toUpperCase()}`;
+        }
+
+        function convertArea() {
+            const val = parseFloat(document.getElementById('tool-area-val').value) || 0;
+            const from = document.getElementById('tool-area-from').value;
+            const to = document.getElementById('tool-area-to').value;
+            const toSqm = { sqm: 1, sqft: 0.092903, acre: 4046.86, hectare: 10000 };
+            const sqm = val * toSqm[from];
+            const result = sqm / toSqm[to];
+            document.getElementById('tool-area-result').innerText = `${result.toLocaleString(undefined, {maximumFractionDigits: 4})} ${to.toUpperCase()}`;
+        }
+
+        function convertData() {
+            const val = parseFloat(document.getElementById('tool-data-val').value) || 0;
+            const from = document.getElementById('tool-data-from').value;
+            const to = document.getElementById('tool-data-to').value;
+            const toBytes = { b: 1, kb: 1024, mb: 1024*1024, gb: 1024*1024*1024, tb: 1024*1024*1024*1024 };
+            const bytes = val * toBytes[from];
+            const result = bytes / toBytes[to];
+            document.getElementById('tool-data-result').innerText = `${result.toLocaleString(undefined, {maximumFractionDigits: 4})} ${to.toUpperCase()}`;
+        }
+
+        function convertTime() {
+            const val = parseFloat(document.getElementById('tool-time-val').value) || 0;
+            const from = document.getElementById('tool-time-from').value;
+            const to = document.getElementById('tool-time-to').value;
+            const toSec = { sec: 1, min: 60, hr: 3600, day: 86400, yr: 31536000 };
+            const sec = val * toSec[from];
+            const result = sec / toSec[to];
+            document.getElementById('tool-time-result').innerText = `${result.toLocaleString(undefined, {maximumFractionDigits: 4})} ${to.toUpperCase()}`;
+        }
+    </script>
 </body>
 </html>
